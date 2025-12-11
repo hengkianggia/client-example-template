@@ -13,6 +13,7 @@ export default function Home() {
   const [redirectUri, setRedirectUri] = useState<string | null>(null);
 
   const { isLogin } = useAuthStore();
+  const { generateNewString } = useRandomStringStore();
 
   const randomString = useRandomStringStore((state) => state.randomValue);
 
@@ -29,6 +30,10 @@ export default function Home() {
   useEffect(() => {
     setLoginCondition(isLogin);
   }, [isLogin]);
+
+  useEffect(() => {
+    generateNewString();
+  }, []);
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center space-y-10">
