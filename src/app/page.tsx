@@ -1,7 +1,7 @@
 "use client";
 
 import { generateCodeChallenge } from "@/feature/_global/helper/helpers";
-import { NEXT_PUBLIC_CLIENT_ID } from "@/lib/environment";
+import { NEXT_PUBLIC_CLIENT_ID, NEXT_PUBLIC_SSO_URL } from "@/lib/environment";
 import { useRandomStringStore } from "@/state/randomStringStore";
 import { useAuthStore } from "@/state/useAuthStore";
 import Link from "next/link";
@@ -9,15 +9,20 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [loginCondition, setLoginCondition] = useState<boolean>(false);
+  const [codeChallenge, setCodeChallenge] = useState<string | null>(null);
+  const [redirectUri, setRedirectUri] = useState<string | null>(null);
+
   const { isLogin } = useAuthStore();
 
   const randomString = useRandomStringStore((state) => state.randomValue);
 
   const client = NEXT_PUBLIC_CLIENT_ID;
+  const hostSSO = NEXT_PUBLIC_SSO_URL;
   // Only generate code challenge on the client side
-  const [codeChallenge, setCodeChallenge] = useState<string | null>(null);
 
   useEffect(() => {
+    const origin = window.location.origin;
+    setRedirectUri(`${origin}/callback`);
     setCodeChallenge(generateCodeChallenge(randomString));
   }, [randomString]);
 
@@ -35,8 +40,8 @@ export default function Home() {
           className="text-blue-500"
           rel="noreferrer"
           href={
-            codeChallenge
-              ? `http://localhost:1000/callback?clientId=${client}&code_challenge=${codeChallenge}&code_challenge_method=S256&redirectUri=http://localhost:3000/callback&responseType=code`
+            codeChallenge && redirectUri
+              ? `${hostSSO}/callback?clientId=${client}&code_challenge=${codeChallenge}&code_challenge_method=S256&redirectUri=${redirectUri}&responseType=code`
               : "#"
           }
           onClick={(e) => {
